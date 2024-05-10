@@ -1,0 +1,26 @@
+{
+  "name": "blockchain-indexer",
+  "dependencies": {
+    "dotenv": "16.4.5",
+    "ethers": "5.4.0",
+    "mysql": "2.18.1",
+    "web3": "4.8.0"
+  },
+  "version": "0.1.0",
+  "description": "An indexer for smart contracts on Ethereum type blockchains",
+  "main": "indexer.js",
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/0x365/blockchain-indexer.git"
+  },
+  "author": "Robert Cowlishaw (0x365)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/0x365/blockchain-indexer/issues"
+  },
+  "homepage": "https://github.com/0x365/blockchain-indexer#readme"
+}
