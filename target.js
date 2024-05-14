@@ -1,6 +1,6 @@
 const contractAddress = "0xdAC17F958D2ee523a2206206994597C13D831ec7"
 
-const deploymenBlock = 19839736
+const deploymentBlock = 19869200
 
 const contractABI = [
     {
@@ -674,4 +674,4 @@ const contractABI = [
     }
 ]
 
-module.exports = { contractAddress, deploymenBlock, contractABI };
+module.exports = { contractAddress, deploymentBlock, contractABI };

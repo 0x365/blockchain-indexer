@@ -13,7 +13,7 @@ This is for a generic smart contract, where all transactions are recorded and pl
 #### Pre-requisites
 
 - Tested and developed with docker compose (Tested with Docker Engine v26.1.1, Docker Compose v2.27.0).
-- Node Package Manager/Node Version Manager (Tested with nvm v20.13.1)
+- Node.js (Tested with nvm v0.39.1, node.js v20.13.1, npm 10.5.2)
 - Specific Versions of all systems are given at bottom of this readme
 
 #### Startup
@@ -42,10 +42,15 @@ python fetch_abi.py <Deployed Contract Address>
 sudo docker compose up -d
 ```
 
-4. Run `indexer.js`
+#### Dev Mode - WIP
+
+1. Deploy database and database manager containers individually
+
+2. Run `indexer.js`
 ```bash
 node indexer.js
 ```
+Problems often occur here if you don't have the correct version of node. Try `nvm use 20.13.1`
 
 #### Details
 
