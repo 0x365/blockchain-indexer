@@ -8,15 +8,15 @@ This is for a generic smart contract, where all transactions are recorded and pl
 - Currently being developed on Ubuntu v24.04
 - Dev version must be used at the moment
 
-## Setup
+#### Indexer details
+- If turned off and on again, it will just fill database with repeat data
+- If archive returns more than 1000, error occurs 
+- Currently only handles 1 event at a time
+- Archiver shows count higher than what actually gets submitted
 
-#### Pre-requisites
+## Run with Docker
 
-- Tested and developed with docker compose (Tested with Docker Engine v26.1.1, Docker Compose v2.27.0).
-- Node.js (Tested with nvm v0.39.1, node.js v20.13.1, npm 10.5.2)
-- Specific Versions of all systems are given at bottom of this readme
-
-#### Startup
+Tested and developed with docker compose (Tested with Docker Engine v26.1.1, Docker Compose v2.27.0).
 
 1. Set `.env` file. All and any of this can be changed. An API key is required for the URLs.
 ```yml
@@ -37,30 +37,52 @@ pip install -r requirements.txt
 python fetch_abi.py <Deployed Contract Address>
 ```
 
-3. Start Docker Container
+3. Deploy full system
 ```bash
+sudo docker compose up
+# Or run with hidden log
 sudo docker compose up -d
 ```
+or run command script
+```bash
+sudo bash indexer.sh [OPTIONS]
+```
+```
+Options:
+  -h,     --help                 Display usage
+  -db,    --run-db               Start database and database manager containers
+  -indx,  --run-indexer          Start indexer container
+  -xdb,   --shutdown-db          Shutdown database and database manager containers
+  -xind,  --shutdown-indexer     Shutdown indexer container
+  -x,     --shutdown-all         Shutdown all containers
+  -c,     --clean                Delete containers (Somewhat dangerous)
+```
 
-#### Dev Mode - WIP
+## Dev
 
-1. Deploy database and database manager containers individually
+#### Ports
+Databse UI - Adminer is currently running on `localhost:8080`
+Database - Mariadb is currently running on `localhost:3306`
 
-2. Run `indexer.js`
+#### Run `indexer.js` without docker.
 ```bash
 node indexer.js
 ```
 Problems often occur here if you don't have the correct version of node. Try `nvm use 20.13.1`
 
-#### Details
-
-Databse UI - Adminer is currently running on `localhost:8080`
-Database - Mariadb is currently running on `localhost:3306`
-
+#### Stop containers and remove containers
+```bash
+# Stop all containers
+sudo docker stop $(docker ps -a -q)
+# Delete all containers
+sudo docker rm $(docker ps -a -q)
+```
 
 ## Dev details for working version
 
-Specific version details given below:
+- Tested and developed with docker compose (Tested with Docker Engine v26.1.1, Docker Compose v2.27.0).
+- Node.js (Tested with nvm v0.39.1, node.js v20.13.1, npm 10.5.2)
+- Specific version details given below:
 ```
   blockchain-indexer: '0.1.0',
   npm: '10.5.2',

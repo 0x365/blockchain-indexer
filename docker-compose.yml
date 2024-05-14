@@ -14,7 +14,7 @@ services:
       - data:/var/lib/mysql
     ports:
       - "3306:3306"
-  adminer:
+  db-manager:
     container_name: db-manager
     image: adminer:latest
     restart: unless-stopped
@@ -36,3 +36,4 @@ services:
       DATABASE_URL: db
     depends_on:
       - db
+      - db-manager
