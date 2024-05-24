@@ -61,8 +61,8 @@ Options:
 ## Dev
 
 #### Ports
-Databse UI - Adminer is currently running on `localhost:8080`
-Database - Mariadb is currently running on `localhost:3306`
+- Databse UI - Adminer is currently running on `localhost:8080`
+- Database - Mariadb is currently running on `localhost:3306`
 
 #### Run `indexer.js` without docker.
 ```bash

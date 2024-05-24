@@ -61,6 +61,7 @@ con.connect(function(err) {
     contract_http.getPastEvents(event_name, options)
         .then(results => {
             var archive_count = 0;
+            console.log("Here")
             for (let i = 0; i < results.length; i++) {
                 var single_res = results[i]
                 var sql = "INSERT INTO "+event_name+" (blockNumber, transactionHash, sender, reciever, value) VALUES ('"
