@@ -1,5 +1,7 @@
 # Web3 Simple Indexer
 
+Run `indexer.py` whenever you would like to update the database
+
 ### Setup
 
 1. Build API file called `.api.json`
@@ -48,4 +50,10 @@
 }
 ```
 
-3. Set Function Names????
+3. Setup python virtual environment
+
+```bash
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements
+```
