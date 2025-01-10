@@ -5,6 +5,10 @@ import os
 import csv
 
 
+target_file_name = "target_small.json"
+ticker_file_name = "last_block.txt"
+
+
 def load_json(file_name):
     with open(file_name) as f:
         output = json.load(f)
@@ -23,27 +27,33 @@ def csv_output(file_name, data_send):
             return
 
 
+
+# Contract details
+contract_network_name = load_json(target_file_name)["network"]
+
+
+contract_address = load_json(target_file_name)["address"]
+contract_abi = load_json(target_file_name)["abi"]
+contract_deployed_block= load_json(target_file_name)["deploy_block"]
+
+
+if os.path.exists(ticker_file_name):
+    with open(ticker_file_name, 'r') as file:
+        content = file.read()
+        contract_deployed_block = int(content)
+
 # Connect to Infura
-infura_url = load_json(".api.json")["mainnet"]
+infura_api_urls = load_json(".api.json")
+if not contract_network_name in infura_api_urls.keys():
+    raise Exception("Target network name does not have API to ping")
+
+infura_url = load_json(".api.json")[contract_network_name]
 web3 = Web3(Web3.HTTPProvider(infura_url))
 
 # Check connection
 if not web3.is_connected():
     print("Unable to connect to the Ethereum network.")
     exit()
-
-
-# Contract details
-contract_address = load_json("target.json")["address"]
-contract_abi = load_json("target.json")["abi"]
-contract_deployed_block= load_json("target.json")["deploy_block"]
-
-file_path = "last_block.txt"
-if os.path.exists(file_path):
-    with open(file_path, 'r') as file:
-        content = file.read()
-        contract_deployed_block = int(content)
-
 
 # Initialize the contract
 contract = web3.eth.contract(address=contract_address, abi=contract_abi)
@@ -67,7 +77,7 @@ def fetch_logs_in_chunks(from_block, to_block, chunk_size=10000, retry_limit=3):
         while attempt < retry_limit:
             try:
                 # Fetch logs for the current block range
-                logs = contract.events.Transfer().get_logs(from_block=current_block, to_block=end_block)
+                logs = contract.events.ContractCreated().get_logs(from_block=current_block, to_block=end_block)
                 all_logs.extend(logs)
                 if len(logs) < 4000:
                     chunk_size = int(chunk_size * 2)
@@ -93,22 +103,26 @@ def fetch_logs_in_chunks(from_block, to_block, chunk_size=10000, retry_limit=3):
 logs = fetch_logs_in_chunks(contract_deployed_block, latest_block_number)
 
 
-if not os.path.exists(file_path):
-    with open(file_path, 'w') as file:
+if not os.path.exists(ticker_file_name):
+    with open(ticker_file_name, 'w') as file:
         file.write(str(latest_block_number+1))
 
 
 ##### REPLACE WITH MYSQL
 
-csv_array = [["block_num", "log_index", "tx_hash", *list(logs[0]["args"].keys())]]
-for log in logs:
-    block_num = log.blockNumber
-    log_index = log.logIndex
-    tx_hash = log.transactionHash.hex()
-    args = log["args"]
-    csv_array.append([block_num, log_index, tx_hash, *list(args.values())])
+if len(logs) > 0:
+    print(len(logs), "events found")
+    csv_array = [["block_num", "log_index", "tx_hash", *list(logs[0]["args"].keys())]]
+    for log in logs:
+        block_num = log.blockNumber
+        log_index = log.logIndex
+        tx_hash = log.transactionHash.hex()
+        args = log["args"]
+        csv_array.append([block_num, log_index, tx_hash, *list(args.values())])
 
-csv_output("test_csv.csv", csv_array)
+    csv_output("test_csv.csv", csv_array)
+else:
+    print("No events found")
 
 
 
