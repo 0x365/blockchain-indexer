@@ -2,6 +2,7 @@
   "network": "sepolia",
   "address": "0xFF1aae6928D49c3744a81F891621e848914898ed",
   "deploy_block": 7354710,
+  "contract_events": ["ContractCreated"],
   "abi": [
     {
       "inputs": [],

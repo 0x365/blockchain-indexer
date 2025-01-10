@@ -4,66 +4,17 @@ import json
 import os
 import csv
 
+from commons import *
+
+##########################################
 
 target_file_name = "target_small.json"
 ticker_file_name = "last_block.txt"
+api_key_file_name = ".api.json"
 
+##########################################
 
-def load_json(file_name):
-    with open(file_name) as f:
-        output = json.load(f)
-    return output
-
-# Output
-def csv_output(file_name, data_send):
-    with open(file_name, "w") as f:
-        if len(data_send) == 0:
-            f.close()
-            return
-        else:
-            for item in data_send:
-                csv.writer(f).writerow(item)
-            f.close()
-            return
-
-
-
-# Contract details
-contract_network_name = load_json(target_file_name)["network"]
-
-
-contract_address = load_json(target_file_name)["address"]
-contract_abi = load_json(target_file_name)["abi"]
-contract_deployed_block= load_json(target_file_name)["deploy_block"]
-
-
-if os.path.exists(ticker_file_name):
-    with open(ticker_file_name, 'r') as file:
-        content = file.read()
-        contract_deployed_block = int(content)
-
-# Connect to Infura
-infura_api_urls = load_json(".api.json")
-if not contract_network_name in infura_api_urls.keys():
-    raise Exception("Target network name does not have API to ping")
-
-infura_url = load_json(".api.json")[contract_network_name]
-web3 = Web3(Web3.HTTPProvider(infura_url))
-
-# Check connection
-if not web3.is_connected():
-    print("Unable to connect to the Ethereum network.")
-    exit()
-
-# Initialize the contract
-contract = web3.eth.contract(address=contract_address, abi=contract_abi)
-
-latest_block_number = web3.eth.block_number
-
-#################### NEEEDDD TOOO MAKE CONTRACTCREATED FUNCTION CHANGEABLE ############################
-# logs = contract.events.ContractCreated().get_logs(from_block=contract_deployed_block, to_block=latest_block_number)
-
-def fetch_logs_in_chunks(from_block, to_block, chunk_size=10000, retry_limit=3):
+def fetch_logs_in_chunks(from_block, to_block, contract_event, chunk_size=10000, retry_limit=3):
     all_logs = []
     current_block = from_block
     attempt = 0
@@ -77,7 +28,8 @@ def fetch_logs_in_chunks(from_block, to_block, chunk_size=10000, retry_limit=3):
         while attempt < retry_limit:
             try:
                 # Fetch logs for the current block range
-                logs = contract.events.ContractCreated().get_logs(from_block=current_block, to_block=end_block)
+                event = getattr(contract.events, contract_event)
+                logs = event().get_logs(from_block=current_block, to_block=end_block)
                 all_logs.extend(logs)
                 if len(logs) < 4000:
                     chunk_size = int(chunk_size * 2)
@@ -99,32 +51,67 @@ def fetch_logs_in_chunks(from_block, to_block, chunk_size=10000, retry_limit=3):
 
     return all_logs
 
+##########################################
+
+# Contract details
+target = load_json(target_file_name)
+contract_network_name = target["network"]
+contract_address = target["address"]
+contract_abi = target["abi"]
+contract_deployed_block= target["deploy_block"]
+contract_events = target["contract_events"]
+
+if os.path.exists(ticker_file_name):
+    with open(ticker_file_name, 'r') as file:
+        content = file.read()
+        contract_deployed_block = int(content)
+
+# Connect to Infura
+infura_api_urls = load_json(api_key_file_name)
+if not contract_network_name in infura_api_urls.keys():
+    raise Exception("Target network name does not have API to ping")
+
+infura_url = infura_api_urls[contract_network_name]
+web3 = Web3(Web3.HTTPProvider(infura_url))
+
+# Check connection
+if not web3.is_connected():
+    print("Unable to connect to the Ethereum network.")
+    exit()
+
+# Initialize the contract
+contract = web3.eth.contract(address=contract_address, abi=contract_abi)
+
+latest_block_number = web3.eth.block_number
+
+
+
+
 # Fetch logs from contract deployment block to the latest block in smaller chunks
-logs = fetch_logs_in_chunks(contract_deployed_block, latest_block_number)
+for contract_event in contract_events:
+    logs = fetch_logs_in_chunks(contract_deployed_block, latest_block_number, contract_event)
+
+    ##### REPLACE WITH MYSQL
+
+    if len(logs) > 0:
+        print(len(logs), "events found")
+        csv_array = [["block_num", "log_index", "tx_hash", *list(logs[0]["args"].keys())]]
+        for log in logs:
+            block_num = log.blockNumber
+            log_index = log.logIndex
+            tx_hash = log.transactionHash.hex()
+            args = log["args"]
+            csv_array.append([block_num, log_index, tx_hash, *list(args.values())])
+
+        csv_output("database_"+contract_event+".csv", csv_array)
+    else:
+        print("No events found")
+
 
 
 if not os.path.exists(ticker_file_name):
     with open(ticker_file_name, 'w') as file:
         file.write(str(latest_block_number+1))
-
-
-##### REPLACE WITH MYSQL
-
-if len(logs) > 0:
-    print(len(logs), "events found")
-    csv_array = [["block_num", "log_index", "tx_hash", *list(logs[0]["args"].keys())]]
-    for log in logs:
-        block_num = log.blockNumber
-        log_index = log.logIndex
-        tx_hash = log.transactionHash.hex()
-        args = log["args"]
-        csv_array.append([block_num, log_index, tx_hash, *list(args.values())])
-
-    csv_output("test_csv.csv", csv_array)
-else:
-    print("No events found")
-
-
 
 
 

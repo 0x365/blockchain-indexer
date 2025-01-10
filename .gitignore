@@ -1,8 +1,8 @@
+__pycache__
 venv
 
 .api.json
 
 last_block.txt
 
-
-test.csv
+*.csv
