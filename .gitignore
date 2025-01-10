@@ -1,8 +1,8 @@
-.env
+venv
 
-node_modules
-tools/venv
+.api.json
 
-package-lock.json
+last_block.txt
 
-abi.json
+
+test.csv
