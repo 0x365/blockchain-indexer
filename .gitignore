@@ -1,8 +1,4 @@
-__pycache__
-venv
+.env
 
-.api.json
-
-last_block.txt
-
-*.csv
+node_modules
+package-lock.json

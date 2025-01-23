@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  mariadb:
+    image: mariadb:latest
+    container_name: mariadb-container
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "3011:3011"
+    volumes:
+      - mariadb_data:/var/lib/mysql
+
+  web3:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: web3-indexer-container
+    depends_on:
+      - mariadb
+    environment:
+      DB_HOST: ${DB_HOST}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+    ports:
+      - "3012:3012"
+    volumes:
+      - .:/usr/src/app
+    command: ["sh", "-c", "sleep 10 && node web3_indexer.js"]
+
+  web2:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: web2-api-container
+    depends_on:
+      - mariadb
+    environment:
+      DB_HOST: ${DB_HOST}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+    ports:
+      - "3013:3013"
+    volumes:
+      - .:/usr/src/app
+    command: ["sh", "-c", "sleep 10 && node web2_api.js"]
+
+volumes:
+  mariadb_data:
