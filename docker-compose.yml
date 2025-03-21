@@ -1,0 +1,39 @@
+version: '3.9'
+
+volumes:
+  mariadb_data:
+
+services:
+  mariadb:
+    image: mariadb:latest
+    container_name: db-container
+    restart: always
+    env_file: ".env"
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      timeout: 5s
+      retries: 10
+
+  index:
+    build:
+      context: ./index
+      dockerfile: Dockerfile
+    container_name: index-container
+    env_file: ".env"
+    depends_on:
+      mariadb:
+        condition: service_healthy
+
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    container_name: api-container
+    env_file: ".env"
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    ports:
+      - "3013:3013"
