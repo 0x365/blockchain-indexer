@@ -7,4 +7,4 @@ if [ ! -f .env ]; then
 fi
 
 echo "Running sudo docker compose up"
-sudo docker compose up --build
+sudo docker-compose up --build

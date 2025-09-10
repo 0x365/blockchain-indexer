@@ -113,6 +113,31 @@ async function getEventID(connection, target) { //contractAddress, eventName, co
     }
 }
 
+const isSafe = (v) => v >= Number.MIN_SAFE_INTEGER && v <= Number.MAX_SAFE_INTEGER;
+
+function serializeArg(v) {
+  if (typeof v === "bigint") {
+    // safest: keep full precision
+    return v.toString(); // e.g. store into VARCHAR/DECIMAL/BIGINT via driver
+  }
+  if (typeof v === "string") {
+    return v; // addresses/bytes/hex
+  }
+  if (Array.isArray(v)) {
+    // tuples/static arrays -> recursively serialize
+    return JSON.stringify(v.map(serializeArg));
+  }
+  if (v instanceof Uint8Array) {
+    // if any bytes show up as Uint8Array
+    return "0x" + [...v].map(b => b.toString(16).padStart(2, "0")).join("");
+  }
+  if (v && typeof v === "object") {
+    // ethers Result is array-like; but if you ever get a plain object, stringify it
+    return JSON.stringify(v);
+  }
+  return v ?? null;
+}
+
 // Insert Logs into Database
 async function insertLogs(connection, logs, target) { //eventName, contractAddress, contractName, eventOutputs) {
     try {
@@ -132,13 +157,12 @@ async function insertLogs(connection, logs, target) { //eventName, contractAddre
                 log.blockNumber
             ]);
             target.eventOutputFormat.forEach((key, index) => {
-                if (typeof log.args[index] === "string") {
-                    connection.execute(query_per_arg, [
-                        log.transactionHash,
-                        key,
-                        convertBigIntToNumber(log.args[index])
-                    ]);
-                }
+                const val = log.args[index];
+                connection.execute(query_per_arg, [
+                    log.transactionHash,
+                    key,
+                    serializeArg(val),
+                ]);
             });
         }
     } catch (err) {
@@ -220,6 +244,7 @@ async function listenToEvents(connection, target) {
         console.log(targets_all)
         
         for (let targetFileName of targets_all) {
+            if (targetFileName[8] == ".") {continue}    // Incase the file is hidden (On Mac .DS_Store gets in the way)
             const target = loadJson(targetFileName);
 
             const contractNetworkName = target.network
