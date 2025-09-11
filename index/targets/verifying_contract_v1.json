@@ -1,6 +1,6 @@
 {
     "network": "sepolia",
-    "address": "0x5171f66151ba181128bb8f38b69b19a7c6fdfa84",
+    "address": "0xb9ebcac869d662f51ec806bc6cc016f2a774d0cb",
     "deploy_block": 9174370,
     "contract_events": [
       "ProofAccepted"
@@ -34,8 +34,20 @@
         {
           "indexed": false,
           "internalType": "uint256",
-          "name": "tag",
+          "name": "latitude",
           "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "longitude",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "sender",
+          "type": "address"
         },
         {
           "indexed": false,
@@ -61,7 +73,12 @@
         },
         {
           "internalType": "uint256",
-          "name": "tag",
+          "name": "latitude",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "longitude",
           "type": "uint256"
         }
       ],

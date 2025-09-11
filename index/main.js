@@ -61,6 +61,7 @@ async function createDatabase() {
                 event_name VARCHAR(255),
                 contract_name VARCHAR(255),
                 network_name VARCHAR(255),
+                abi TEXT,
                 PRIMARY KEY (event_id),
                 UNIQUE (contract_address, event_name)
             );
@@ -96,10 +97,10 @@ async function createDatabase() {
 async function getEventID(connection, target) { //contractAddress, eventName, contractName) {
     try {
         await connection.execute(`
-            INSERT INTO events (contract_address, event_name, contract_name, network_name)
-            VALUES (?, ?, ?, ?)
+            INSERT INTO events (contract_address, event_name, contract_name, network_name, abi)
+            VALUES (?, ?, ?, ?, ?)
             ON DUPLICATE KEY UPDATE contract_name = VALUES(contract_name)
-            `, [target.contractAddress, target.eventName, target.nickname, target.networkName]
+            `, [target.contractAddress, target.eventName, target.nickname, target.networkName, target.fullAbi]
         );
         const [rows] = await connection.execute(`
             SELECT event_id FROM events
@@ -268,6 +269,7 @@ async function listenToEvents(connection, target) {
                     contractAddress: target.address,
                     nickname: targetFileName.substring(8, targetFileName.length-5),
                     eventOutputFormat: eventMapper[eventName],
+                    fullAbi: JSON.stringify(target.abi),
                     networkName: contractNetworkName.toLowerCase(),
                 }
                 fetchLogsInChunks(connection, target_package);
