@@ -15,4 +15,6 @@ COPY . .
 EXPOSE 3013
 
 # Command to run the application
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "3013"]
+# CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "3013"]
+
+CMD ["uvicorn","main:app","--host","0.0.0.0","--port","3013", "--proxy-headers","--forwarded-allow-ips","127.0.0.1"]

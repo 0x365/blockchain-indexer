@@ -12,7 +12,7 @@ from src.endpoints import *
 load_dotenv()
 
 # Initialize FastAPI app
-app = FastAPI()
+app = FastAPI(root_path="/api")
 
 # Enable CORS (for frontend compatibility)
 app.add_middleware(

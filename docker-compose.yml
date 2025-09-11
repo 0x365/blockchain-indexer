@@ -36,4 +36,4 @@ services:
       mariadb:
         condition: service_healthy
     ports:
-      - "3013:3013"
+      - "127.0.0.1:3013:3013"
